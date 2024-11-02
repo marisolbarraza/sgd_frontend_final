@@ -1,10 +1,13 @@
 
 import { BsEyeFill, BsEyeSlashFill } from "react-icons/bs";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 
 function Login() {
 
+  const navigate = useNavigate();
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const visibilidadPassword = () => {
     setMostrarPassword(!mostrarPassword);
@@ -14,19 +17,36 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState(false);
 
-  const cuentaEjemplo = {
-    email: "example@example.com",
-    password: "Hola12@"
-  };
-
-  const iniciarSesion = (e) => {
+  const iniciarSesion = async (e) => {
     e.preventDefault();// Evita que el formulario recargue la página
-    if (email == cuentaEjemplo.email && password == cuentaEjemplo.password) {
-      setLoginError(false);
-      console.log("Inicio Exitoso");
-    } else {
+    try {
+      const response = await fetch("http://localhost:8080/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: "include" // Permite que la cookie se envíe y reciba
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setLoginError(false);
+        console.log(data);
+        navigate("/inicio");
+      }
+      else if (response.status === 401) {
+        console.error(data);
+        setLoginError(true);
+      }
+      else {
+        console.error(data);
+        setLoginError(true);
+      }
+    } catch (error) {
+      console.error("Error al conectar con el servidor: ", error);
       setLoginError(true);
     }
+
   };
 
   return (
